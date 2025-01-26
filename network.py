@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+import util
 
 class Network:
     def __init__(self, sizes):
@@ -96,7 +96,7 @@ class Network:
         """
         n = len(images)
         pixels = images.shape[1] * images.shape[2]
-        return [(images[i].reshape(pixels, 1), labels[i]) for i in range(n)]
+        return [(util.dct2d(images[i]).reshape(pixels, 1), labels[i]) for i in range(n)]
 
 
 def sigmoid(z):
