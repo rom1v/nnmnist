@@ -40,13 +40,13 @@ class Network:
 
     def train_mini_batch(self, mini_batch, eta):
         m = len(mini_batch)
-        nabla_w = [np.zeros_like(w) for w in self.weights]
-        nabla_b = [np.zeros_like(b) for b in self.biases]
-        for x, y in mini_batch:
-            y = vectorize_output(y)
-            delta_nabla_w, delta_nabla_b = self.backprop(x, y)
-            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+
+        # x and y are matrices having 1 column for each input/output from the mini_batch
+        x = np.concatenate([x for x, _ in mini_batch], axis=1)
+        y = np.concatenate([vectorize_output(y) for _, y in mini_batch], axis=1)
+
+        nabla_w, nabla_b = self.backprop(x, y)
+
         self.weights = [w - (eta / m) * nw for w, nw in zip(self.weights, nabla_w)]
         self.biases = [b - (eta / m) * nb for b, nb in zip(self.biases, nabla_b)]
 
@@ -68,14 +68,17 @@ class Network:
         delta = self.cost_fn_prime(a, y) * self.act_fn_prime(z)
 
         nabla_w[-1] = delta @ activations[-2].T
-        nabla_b[-1] = delta
+        # Sum all columns of delta into nabla_b[-1]
+        nabla_b[-1] = delta @ np.ones((delta.shape[1], 1))
 
         num_layers = len(self.weights) + 1
         for l in range(2, num_layers):
             z = zs[-l]
             delta = (self.weights[-l + 1].T @ delta) * self.act_fn_prime(z)
             nabla_w[-l] = delta @ activations[-l - 1].T
-            nabla_b[-l] = delta
+            # Sum all columns of delta into nabla_b[-l]
+            nabla_b[-l] = delta @ np.ones((delta.shape[1], 1))
+
         return (nabla_w, nabla_b)
 
     def evaluate(self, test_data):
