@@ -17,6 +17,8 @@ class CrossEntropyCost:
     @staticmethod
     def fn(a, y):
         y = vectorize_output(y)
+        epsilon = 1e-8
+        a = np.clip(a, epsilon, 1 - epsilon)
         return np.sum(-y * np.log(a) - (1 - y) * np.log(1 - a))
 
     @staticmethod
@@ -32,8 +34,8 @@ class Network:
             for rows, cols in zip(sizes[1:], sizes[:-1])
         ]
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
-        self.act_fn = sigmoid
-        self.act_fn_prime = sigmoid_prime
+        self.act_fn = relu
+        self.act_fn_prime = relu_prime
         self.cost = cost
 
     def feedforward(self, a):
@@ -160,6 +162,14 @@ def sigmoid(z):
 def sigmoid_prime(z):
     s = sigmoid(z)
     return s * (1 - s)
+
+
+def relu(z):
+    return np.maximum(0, z)
+
+
+def relu_prime(z):
+    return (z > 0).astype(float)
 
 
 def vectorize_output(i):
