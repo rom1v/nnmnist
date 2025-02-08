@@ -11,7 +11,7 @@ class Network:
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
         self.act_fn = sigmoid
         self.act_fn_prime = sigmoid_prime
-        self.cost_fn_prime = cost_prime
+        self.cost_delta_fn = quadratic_cost_delta
 
     def feedforward(self, a):
         for w, b in zip(self.weights, self.biases):
@@ -65,7 +65,7 @@ class Network:
             activations.append(a)
 
         # a and z contains the values for the last layer
-        delta = self.cost_fn_prime(a, y) * self.act_fn_prime(z)
+        delta = self.cost_delta_fn(z, a, y)
 
         nabla_w[-1] = delta @ activations[-2].T
         # Sum all columns of delta into nabla_b[-1]
@@ -113,8 +113,8 @@ def sigmoid_prime(z):
     return s * (1 - s)
 
 
-def cost_prime(output, y):
-    return output - y
+def quadratic_cost_delta(z, a, y):
+    return (a - y) * sigmoid_prime(z)
 
 
 def vectorize_output(i):
