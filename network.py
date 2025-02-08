@@ -28,7 +28,8 @@ class Network:
     def __init__(self, sizes, cost=CrossEntropyCost):
         self.sizes = sizes
         self.weights = [
-            np.random.randn(rows, cols) for rows, cols in zip(sizes[1:], sizes[:-1])
+            np.random.randn(rows, cols) / np.sqrt(cols)
+            for rows, cols in zip(sizes[1:], sizes[:-1])
         ]
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
         self.act_fn = sigmoid
