@@ -20,16 +20,24 @@ class Network:
         return a
 
     def train(self, training_data, mini_batch_size, eta, epochs, test_data=None):
+        training_total = len(training_data)
         if test_data:
             test_total = len(test_data)
         for i in range(epochs):
             self.train_one_epoch(training_data, mini_batch_size, eta)
+            test_ok = self.evaluate(training_data)
+            cost = self.cost(training_data)
+            print(
+                f"Epoch {i:2d} training: {test_ok:5d} / {training_total:5d} (cost={cost})"
+            )
             if test_data:
                 test_ok = self.evaluate(test_data)
                 cost = self.cost(test_data)
-                print(f"Epoch {i}: {test_ok} / {test_total} (cost={cost})")
+                print(
+                    f"Epoch {i:2d}     test: {test_ok:5d} / {test_total:5d} (cost={cost})"
+                )
             else:
-                print(f"Epoch {i} complete")
+                print(f"Epoch {i:2d} complete")
 
     def train_one_epoch(self, training_data, mini_batch_size, eta):
         n = len(training_data)
