@@ -2,8 +2,30 @@ import numpy as np
 import random
 
 
+class QuadraticCost:
+    @staticmethod
+    def fn(a, y):
+        diff = a - vectorize_output(y)
+        return np.dot(diff.T, diff).squeeze()
+
+    @staticmethod
+    def delta(z, a, y):
+        return (a - y) * sigmoid_prime(z)
+
+
+class CrossEntropyCost:
+    @staticmethod
+    def fn(a, y):
+        y = vectorize_output(y)
+        return np.sum(-y * np.log(a) - (1 - y) * np.log(1 - a))
+
+    @staticmethod
+    def delta(z, a, y):
+        return a - y
+
+
 class Network:
-    def __init__(self, sizes):
+    def __init__(self, sizes, cost=CrossEntropyCost):
         self.sizes = sizes
         self.weights = [
             np.random.randn(rows, cols) for rows, cols in zip(sizes[1:], sizes[:-1])
@@ -11,8 +33,7 @@ class Network:
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
         self.act_fn = sigmoid
         self.act_fn_prime = sigmoid_prime
-        self.cost_fn = cross_entropy_cost
-        self.cost_delta_fn = cross_entropy_cost_delta
+        self.cost = cost
 
     def feedforward(self, a):
         for w, b in zip(self.weights, self.biases):
@@ -26,13 +47,13 @@ class Network:
         for i in range(epochs):
             self.train_one_epoch(training_data, mini_batch_size, eta)
             test_ok = self.evaluate(training_data)
-            cost = self.cost(training_data)
+            cost = self.compute_cost(training_data)
             print(
                 f"Epoch {i:2d} training: {test_ok:5d} / {training_total:5d} (cost={cost})"
             )
             if test_data:
                 test_ok = self.evaluate(test_data)
-                cost = self.cost(test_data)
+                cost = self.compute_cost(test_data)
                 print(
                     f"Epoch {i:2d}     test: {test_ok:5d} / {test_total:5d} (cost={cost})"
                 )
@@ -75,7 +96,7 @@ class Network:
             activations.append(a)
 
         # a and z contains the values for the last layer
-        delta = self.cost_delta_fn(z, a, y)
+        delta = self.cost.delta(z, a, y)
 
         nabla_w[-1] = delta @ activations[-2].T
         # Sum all columns of delta into nabla_b[-1]
@@ -95,12 +116,12 @@ class Network:
         test_results = ((np.argmax(self.feedforward(x)), y) for x, y in test_data)
         return sum(int(x == y) for x, y in test_results)
 
-    def cost(self, test_data):
+    def compute_cost(self, test_data):
         cost = 0
         for x, y in test_data:
             a = self.feedforward(x)
             y_vec = vectorize_output(y)
-            cost += self.cost_fn(a, y)
+            cost += self.cost.fn(a, y)
         cost /= len(test_data)
         return cost
 
@@ -130,24 +151,6 @@ def sigmoid(z):
 def sigmoid_prime(z):
     s = sigmoid(z)
     return s * (1 - s)
-
-
-def quadratic_cost(a, y):
-    diff = a - vectorize_output(y)
-    return np.dot(diff.T, diff).squeeze()
-
-
-def quadratic_cost_delta(z, a, y):
-    return (a - y) * sigmoid_prime(z)
-
-
-def cross_entropy_cost(a, y):
-    y = vectorize_output(y)
-    return np.sum(-y * np.log(a) - (1 - y) * np.log(1 - a))
-
-
-def cross_entropy_cost_delta(z, a, y):
-    return a - y
 
 
 def vectorize_output(i):
