@@ -31,15 +31,15 @@ def main():
         f"and {test_labels.shape[0]} labels."
     )
 
-    training_data = Network.prepare_data(images[:50000], labels[:50000])
+    training_data = Network.prepare_data(images, labels)
     test_data = Network.prepare_data(test_images, test_labels)
 
     nn = Network([28 * 28, 100, 10], cost=network.CrossEntropyCost)
     nn.train(
         training_data,
         mini_batch_size=10,
-        eta=0.5,
-        epochs=30,
+        eta=0.1,
+        epochs=60,
         lmbda=5,
         test_data=test_data,
     )
