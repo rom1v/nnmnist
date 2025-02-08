@@ -11,6 +11,7 @@ class Network:
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
         self.act_fn = sigmoid
         self.act_fn_prime = sigmoid_prime
+        self.cost_fn = cross_entropy_cost
         self.cost_delta_fn = cross_entropy_cost_delta
 
     def feedforward(self, a):
@@ -25,7 +26,8 @@ class Network:
             self.train_one_epoch(training_data, mini_batch_size, eta)
             if test_data:
                 test_ok = self.evaluate(test_data)
-                print(f"Epoch {i}: {test_ok} / {test_total}")
+                cost = self.cost(test_data)
+                print(f"Epoch {i}: {test_ok} / {test_total} (cost={cost})")
             else:
                 print(f"Epoch {i} complete")
 
@@ -85,6 +87,15 @@ class Network:
         test_results = ((np.argmax(self.feedforward(x)), y) for x, y in test_data)
         return sum(int(x == y) for x, y in test_results)
 
+    def cost(self, test_data):
+        cost = 0
+        for x, y in test_data:
+            a = self.feedforward(x)
+            y_vec = vectorize_output(y)
+            cost += self.cost_fn(a, y)
+        cost /= len(test_data)
+        return cost
+
     @staticmethod
     def prepare_data(images, labels):
         """Reformat data to be used by this network.
@@ -113,8 +124,18 @@ def sigmoid_prime(z):
     return s * (1 - s)
 
 
+def quadratic_cost(a, y):
+    diff = a - vectorize_output(y)
+    return np.dot(diff.T, diff).squeeze()
+
+
 def quadratic_cost_delta(z, a, y):
     return (a - y) * sigmoid_prime(z)
+
+
+def cross_entropy_cost(a, y):
+    y = vectorize_output(y)
+    return np.sum(-y * np.log(a) - (1 - y) * np.log(1 - a))
 
 
 def cross_entropy_cost_delta(z, a, y):
