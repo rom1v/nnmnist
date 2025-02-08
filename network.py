@@ -11,7 +11,7 @@ class Network:
         self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
         self.act_fn = sigmoid
         self.act_fn_prime = sigmoid_prime
-        self.cost_delta_fn = quadratic_cost_delta
+        self.cost_delta_fn = cross_entropy_cost_delta
 
     def feedforward(self, a):
         for w, b in zip(self.weights, self.biases):
@@ -115,6 +115,10 @@ def sigmoid_prime(z):
 
 def quadratic_cost_delta(z, a, y):
     return (a - y) * sigmoid_prime(z)
+
+
+def cross_entropy_cost_delta(z, a, y):
+    return a - y
 
 
 def vectorize_output(i):
