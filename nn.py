@@ -33,9 +33,9 @@ def main():
     training_data = Network.prepare_data(images[:50000], labels[:50000])
     test_data = Network.prepare_data(test_images, test_labels)
 
-    network = Network([28 * 28, 30, 10])
+    network = Network([28 * 28, 100, 10])
     network.train(
-        training_data, mini_batch_size=10, eta=3.0, epochs=30, test_data=test_data
+        training_data, mini_batch_size=10, eta=0.5, epochs=30, test_data=test_data
     )
 
 
