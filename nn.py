@@ -35,7 +35,14 @@ def main():
     test_data = Network.prepare_data(test_images, test_labels)
 
     nn = Network([28 * 28, 100, 10], cost=network.CrossEntropyCost)
-    nn.train(training_data, mini_batch_size=10, eta=0.5, epochs=30, test_data=test_data)
+    nn.train(
+        training_data,
+        mini_batch_size=10,
+        eta=0.5,
+        epochs=30,
+        lmbda=5,
+        test_data=test_data,
+    )
 
 
 if __name__ == "__main__":

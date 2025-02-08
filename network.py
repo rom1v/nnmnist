@@ -40,36 +40,38 @@ class Network:
             a = self.act_fn(w @ a + b)
         return a
 
-    def train(self, training_data, mini_batch_size, eta, epochs, test_data=None):
+    def train(
+        self, training_data, mini_batch_size, eta, epochs, lmbda=0, test_data=None
+    ):
         training_total = len(training_data)
         if test_data:
             test_total = len(test_data)
         for i in range(epochs):
-            self.train_one_epoch(training_data, mini_batch_size, eta)
+            self.train_one_epoch(training_data, mini_batch_size, eta, lmbda)
             test_ok = self.evaluate(training_data)
-            cost = self.compute_cost(training_data)
+            cost = self.compute_cost(training_data, lmbda)
             print(
                 f"Epoch {i:2d} training: {test_ok:5d} / {training_total:5d} (cost={cost})"
             )
             if test_data:
                 test_ok = self.evaluate(test_data)
-                cost = self.compute_cost(test_data)
+                cost = self.compute_cost(test_data, lmbda)
                 print(
                     f"Epoch {i:2d}     test: {test_ok:5d} / {test_total:5d} (cost={cost})"
                 )
             else:
                 print(f"Epoch {i:2d} complete")
 
-    def train_one_epoch(self, training_data, mini_batch_size, eta):
+    def train_one_epoch(self, training_data, mini_batch_size, eta, lmbda):
         n = len(training_data)
         random.shuffle(training_data)
         mini_batches = (
             training_data[k : k + mini_batch_size] for k in range(0, n, mini_batch_size)
         )
         for mini_batch in mini_batches:
-            self.train_mini_batch(mini_batch, eta)
+            self.train_mini_batch(mini_batch, eta, lmbda, n)
 
-    def train_mini_batch(self, mini_batch, eta):
+    def train_mini_batch(self, mini_batch, eta, lmbda, n):
         m = len(mini_batch)
 
         # x and y are matrices having 1 column for each input/output from the mini_batch
@@ -78,7 +80,10 @@ class Network:
 
         nabla_w, nabla_b = self.backprop(x, y)
 
-        self.weights = [w - (eta / m) * nw for w, nw in zip(self.weights, nabla_w)]
+        self.weights = [
+            (1 - eta * (lmbda / n)) * w - (eta / m) * nw
+            for w, nw in zip(self.weights, nabla_w)
+        ]
         self.biases = [b - (eta / m) * nb for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
@@ -116,12 +121,15 @@ class Network:
         test_results = ((np.argmax(self.feedforward(x)), y) for x, y in test_data)
         return sum(int(x == y) for x, y in test_results)
 
-    def compute_cost(self, test_data):
+    def compute_cost(self, test_data, lmbda):
         cost = 0
         for x, y in test_data:
             a = self.feedforward(x)
             y_vec = vectorize_output(y)
             cost += self.cost.fn(a, y)
+        # vector view, to compute the squared norm
+        w_vecs = (w.reshape(-1) for w in self.weights)
+        cost += lmbda / 2 * sum(np.dot(w, w) for w in w_vecs)
         cost /= len(test_data)
         return cost
 
