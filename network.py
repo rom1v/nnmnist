@@ -30,10 +30,10 @@ class Network:
     def __init__(self, sizes, cost=CrossEntropyCost):
         self.sizes = sizes
         self.weights = [
-            np.random.randn(rows, cols) / np.sqrt(cols)
+            np.random.randn(rows, cols) / (2 * np.sqrt(cols))
             for rows, cols in zip(sizes[1:], sizes[:-1])
         ]
-        self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
+        self.biases = [np.random.randn(x, 1) / 2 + 0.5 for x in sizes[1:]]
         self.act_fn = relu
         self.act_fn_prime = relu_prime
         self.cost = cost
