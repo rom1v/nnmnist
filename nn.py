@@ -38,7 +38,7 @@ def main():
     nn.train(
         training_data,
         mini_batch_size=10,
-        eta=0.1,
+        eta=0.05,
         epochs=60,
         lmbda=5,
         test_data=test_data,
