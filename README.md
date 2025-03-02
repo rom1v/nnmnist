@@ -72,3 +72,20 @@ Epoch 29: 9490 / 10000
 ```
 
 It correctly classifies about 98.2% of the test images.
+
+
+## Deep convolutional network
+
+Chapter 6 of the book presents a convolutional network.
+
+In this repository, it is implemented using [PyTorch] in `./nn_convnet.py` (the
+book used _Theano_).
+
+[PyTorch]: https://pytorch.org/
+
+It correctly classifies about 99% of the test images:
+
+```
+Test Error:
+ Accuracy: 99.0%, Avg loss: 0.035133
+```
